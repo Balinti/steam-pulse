@@ -1,1034 +1,882 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <title>Steam Pulse - Free HTML5 Game</title>
-  <meta name="description" content="Play Steam Pulse - Tap on steam bursts at the right moment to power your airship and grab surprise powerups.">
+  <meta name="description" content="Play Steam Pulse - Tap along to the beat as steam valves power up randomly, boosting your score.">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#0b1020">
-  <link rel="canonical" href="https://balinti.github.io/steam-pulse/">
+  <meta name="theme-color" content="#1a0a00">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="Steam Pulse - Free HTML5 Game">
-  <meta property="og:description" content="Play Steam Pulse - Tap on steam bursts at the right moment to power your airship and grab surprise powerups.">
+  <meta property="og:description" content="Play Steam Pulse - Tap along to the beat as steam valves power up randomly, boosting your score.">
   <meta property="og:url" content="https://balinti.github.io/steam-pulse/">
-  <meta property="og:image" content="https://balinti.github.io/steam-pulse/og-image.png">
+  <meta property="og:image" content="https://balinti.github.io/steam-pulse/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Steam Pulse - Free HTML5 Game">
-  <meta name="twitter:description" content="Play Steam Pulse - Tap on steam bursts at the right moment to power your airship and grab surprise powerups.">
-  <meta name="twitter:image" content="https://balinti.github.io/steam-pulse/og-image.png">
+  <meta name="twitter:description" content="Play Steam Pulse - Tap along to the beat as steam valves power up randomly, boosting your score.">
+  <meta name="twitter:image" content="https://balinti.github.io/steam-pulse/og-image.jpg">
 
-  <!-- AdSense -->
+  <link rel="canonical" href="https://balinti.github.io/steam-pulse/">
+
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4099346100621490" crossorigin="anonymous"></script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: #0b1020;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      color: #c8d8f0;
-      overflow-x: hidden;
+    html, body {
+      width: 100%; height: 100%;
+      background: #0d0500;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
     }
-
-    #shell {
+    #game-wrap {
       position: relative;
       width: 100%;
       max-width: 420px;
-      height: 100svh;
+      height: 100vh;
       max-height: 750px;
-      background: linear-gradient(160deg, #0d1428 0%, #0b1a2e 60%, #0a1218 100%);
       overflow: hidden;
-      touch-action: manipulation;
-      cursor: pointer;
     }
-
-    canvas {
+    #c {
       display: block;
       width: 100%;
       height: 100%;
-      touch-action: manipulation;
-    }
-
-    #how-to-play {
-      width: 100%;
-      max-width: 420px;
-      padding: 18px 20px;
-      font-size: 13px;
-      line-height: 1.6;
-      color: #8090a8;
-    }
-    #how-to-play h2 { font-size: 14px; color: #a0b4cc; margin-bottom: 8px; letter-spacing: 0.05em; }
-    #how-to-play ul { padding-left: 18px; }
-    #how-to-play li { margin-bottom: 4px; }
-
-    #footer {
-      width: 100%;
-      max-width: 420px;
-      padding: 10px 20px 20px;
-      display: flex;
-      gap: 16px;
-      font-size: 12px;
-      color: #5a6a7a;
-    }
-    #footer button {
-      background: none;
-      border: none;
-      color: #5a7a9a;
-      font-size: 12px;
       cursor: pointer;
-      text-decoration: underline;
-      padding: 0;
+      touch-action: none;
     }
-
-    #modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.75);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-    }
-    #modal-overlay.open { display: flex; }
-    #modal-box {
-      background: #111a2e;
-      border: 1px solid #2a3a5a;
-      border-radius: 12px;
-      padding: 28px 24px;
-      max-width: 340px;
-      width: 90%;
-      font-size: 13px;
-      line-height: 1.7;
-      color: #8090a8;
-    }
-    #modal-box h3 { font-size: 15px; color: #c0d0e8; margin-bottom: 10px; }
-    #modal-close {
-      margin-top: 16px;
-      background: #1a2a4a;
-      border: 1px solid #2a4a7a;
-      color: #a0b8d0;
-      padding: 8px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 13px;
+    #sound-hint {
+      position: absolute;
+      bottom: 10px;
+      left: 0; right: 0;
+      text-align: center;
+      color: rgba(255,200,100,0.4);
+      font-size: 11px;
+      font-family: 'Courier New', monospace;
+      pointer-events: none;
+      letter-spacing: 0.5px;
     }
   </style>
 </head>
 <body>
-
-<div id="shell">
-  <canvas id="gc"></canvas>
-</div>
-
-<section id="how-to-play" aria-label="How to play Steam Pulse">
-  <h2>How to Play</h2>
-  <ul>
-    <li>Tap or press <strong>Space / Enter</strong> to fire the steam engine.</li>
-    <li>Watch the <strong>pressure gauge</strong> needle — tap when it's in the <span style="color:#22ff88">green zone</span> for a powerful thrust.</li>
-    <li>Yellow zone gives a small boost; red zone causes a pressure leak and drops you faster.</li>
-    <li>Fly through the <strong>gaps in gates</strong> to score. Miss a gate and it's game over!</li>
-    <li>Build a <strong>combo</strong> by hitting perfect greens to grow your score multiplier.</li>
-    <li>Difficulty increases over time — gates speed up and the sweet spot shrinks!</li>
-  </ul>
-</section>
-
-<div id="footer">
-  <button onclick="openModal('privacy')">Privacy Policy</button>
-  <button onclick="openModal('terms')">Terms of Use</button>
-</div>
-
-<div id="modal-overlay" role="dialog" aria-modal="true">
-  <div id="modal-box">
-    <h3 id="modal-title"></h3>
-    <div id="modal-content"></div>
-    <button id="modal-close" onclick="closeModal()">Close</button>
-  </div>
+<div id="game-wrap">
+  <canvas id="c"></canvas>
+  <div id="sound-hint">Tap to enable sound</div>
 </div>
 
 <script>
-// ─── Modal helpers ───────────────────────────────────────────────────────────
-const MODAL_DATA = {
-  privacy: {
-    title: 'Privacy Policy',
-    content: 'This game does not collect personal data. High scores are stored locally in your browser via localStorage. Third-party advertising (Google AdSense) may use cookies as described in <a href="https://policies.google.com/privacy" target="_blank" style="color:#6090c0">Google\'s Privacy Policy</a>. By playing, you consent to these terms.'
-  },
-  terms: {
-    title: 'Terms of Use',
-    content: 'Steam Pulse is provided for free personal entertainment. You may not reproduce or redistribute this game without permission. The game is provided as-is without warranty of any kind. High scores are stored locally and are not backed up.'
-  }
-};
-
-function openModal(key) {
-  const d = MODAL_DATA[key];
-  document.getElementById('modal-title').textContent = d.title;
-  document.getElementById('modal-content').innerHTML = d.content;
-  document.getElementById('modal-overlay').classList.add('open');
-}
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
-}
-document.getElementById('modal-overlay').addEventListener('pointerdown', e => {
-  if (e.target === document.getElementById('modal-overlay')) closeModal();
-});
-
-// ─── Game ────────────────────────────────────────────────────────────────────
-(function() {
+(function(){
 'use strict';
 
-// Virtual resolution
-const VW = 420, VH = 750;
+// ── Canvas setup ──────────────────────────────────────────────────────────────
+const wrap = document.getElementById('game-wrap');
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const soundHint = document.getElementById('sound-hint');
 
-const shell  = document.getElementById('shell');
-const canvas = document.getElementById('gc');
-const ctx    = canvas.getContext('2d');
-
-// ─── High-DPI / responsive scaling ──────────────────────────────────────────
-let dpr = 1, scale = 1, offX = 0, offY = 0;
+let W = 0, H = 0, DPR = 1;
 
 function resize() {
-  dpr   = window.devicePixelRatio || 1;
-  const cw = shell.clientWidth;
-  const ch = shell.clientHeight;
-  scale = Math.min(cw / VW, ch / VH);
-  const pw = VW * scale;
-  const ph = VH * scale;
-  offX = (cw - pw) / 2;
-  offY = (ch - ph) / 2;
-  canvas.width  = cw * dpr;
-  canvas.height = ch * dpr;
-  canvas.style.width  = cw + 'px';
-  canvas.style.height = ch + 'px';
+  const rect = wrap.getBoundingClientRect();
+  DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+  W = rect.width;
+  H = rect.height;
+  canvas.width = Math.round(W * DPR);
+  canvas.height = Math.round(H * DPR);
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
 resize();
 window.addEventListener('resize', resize);
 
-// ─── Audio (minimal WebAudio) ────────────────────────────────────────────────
+// ── Audio ─────────────────────────────────────────────────────────────────────
 let audioCtx = null;
-let muted = false;
+let audioEnabled = false;
 
-function getAudioCtx() {
-  if (!audioCtx) {
-    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+function initAudio() {
+  if (audioCtx) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return;
   }
-  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-  return audioCtx;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    audioEnabled = true;
+    soundHint.style.display = 'none';
+  } catch(e) { audioEnabled = false; }
 }
 
-function playTone(freq, type, duration, vol, freqEnd) {
-  if (muted) return;
-  const ac = getAudioCtx();
-  if (!ac) return;
+function playOsc(type, freq, gain, dur, freqEnd) {
+  if (!audioEnabled || !audioCtx) return;
   try {
-    const g = ac.createGain();
-    const o = ac.createOscillator();
-    o.type = type || 'sine';
-    o.frequency.setValueAtTime(freq, ac.currentTime);
-    if (freqEnd) o.frequency.exponentialRampToValueAtTime(freqEnd, ac.currentTime + duration);
-    g.gain.setValueAtTime(vol || 0.15, ac.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration);
-    o.connect(g);
-    g.connect(ac.destination);
-    o.start(ac.currentTime);
-    o.stop(ac.currentTime + duration + 0.01);
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.connect(g); g.connect(audioCtx.destination);
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    if (freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, audioCtx.currentTime + dur);
+    g.gain.setValueAtTime(gain, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    osc.start(); osc.stop(audioCtx.currentTime + dur + 0.01);
   } catch(e) {}
 }
 
-function sfxPerfect()  { playTone(520, 'triangle', 0.18, 0.18, 780); }
-function sfxOkay()     { playTone(300, 'sine',     0.12, 0.10, 340); }
-function sfxMiss()     { playTone(180, 'sawtooth', 0.22, 0.18, 90);  }
-function sfxGate()     { playTone(660, 'sine',     0.1,  0.12, 660); }
-function sfxCrash()    {
-  playTone(200, 'sawtooth', 0.5,  0.25, 40);
-  playTone(80,  'sawtooth', 0.4,  0.15, 30);
+function playNoise(freqCenter, gain, dur) {
+  if (!audioEnabled || !audioCtx) return;
+  try {
+    const len = Math.ceil(audioCtx.sampleRate * dur);
+    const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const src = audioCtx.createBufferSource();
+    const flt = audioCtx.createBiquadFilter();
+    flt.type = 'bandpass';
+    flt.frequency.value = freqCenter;
+    flt.Q.value = 0.8;
+    const g = audioCtx.createGain();
+    src.buffer = buf;
+    src.connect(flt); flt.connect(g); g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(gain, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    src.start(); src.stop(audioCtx.currentTime + dur + 0.01);
+  } catch(e) {}
 }
 
-// ─── Game state ──────────────────────────────────────────────────────────────
-const LS_KEY = 'spr_best';
-
-let state      = 'start'; // start | playing | gameover
-let score      = 0;
-let best       = parseInt(localStorage.getItem(LS_KEY) || '0');
-let combo      = 0;
-let multiplier = 1;
-let maxMult    = 1;
-let maxCombo   = 0;
-let elapsed    = 0; // seconds since run start
-let frameTime  = 0;
-
-// Shake
-let shakeAmt   = 0;
-let shakeDur   = 0;
-let shakeX     = 0;
-let shakeY     = 0;
-
-// Speed lines state
-let speedLines = [];
-let speedLineTimer = 0;
-
-// ─── Player ──────────────────────────────────────────────────────────────────
-const PLAYER_X = 110;
-const PLAYER_R = 18;
-
-let playerY, playerVY;
-let gravity;
-let leakTimer; // countdown of extra gravity after miss
-
-function resetPlayer() {
-  playerY  = VH / 2;
-  playerVY = 0;
-  gravity  = 900;
-  leakTimer = 0;
+function sfxBeat(isSurge) {
+  playOsc('square', isSurge ? 1400 : 800, isSurge ? 0.18 : 0.12, 0.04);
 }
-
-// ─── Gauge ───────────────────────────────────────────────────────────────────
-// Needle sweeps -1..+1 (maps to arc)
-let needlePos  = 0;    // -1 to +1
-let needleDir  = 1;
-let needleSpd  = 1.4;  // units/sec
-
-// Zone boundaries (in needle space, symmetric)
-// Green zone: |needle| <= sweetGreen
-// Yellow zone: sweetGreen < |needle| <= sweetYellow
-// Red: rest
-let sweetGreen  = 0.28;
-let sweetYellow = 0.58;
-
-function getNeedleZone() {
-  const a = Math.abs(needlePos);
-  if (a <= sweetGreen)  return 'green';
-  if (a <= sweetYellow) return 'yellow';
-  return 'red';
+function sfxHit(quality) {
+  // quality: 0=ok, 1=perfect, 2=good
+  const freqs = [330, 660, 440];
+  playOsc('triangle', freqs[quality], 0.2, 0.08, freqs[quality] * 1.3);
+  playNoise(1200, 0.15, 0.1);
 }
-
-// ─── Gates ───────────────────────────────────────────────────────────────────
-const GATE_W   = 18;
-let gateGap    = 200;  // px vertical gap
-let gateSpeed  = 160;  // px/sec rightward scroll (actually gates move left)
-let gateSpawnInterval = 2.2; // seconds
-let gateTimer  = 0;
-let gates      = [];
-let gateScoreValue = 10;
-
-function spawnGate() {
-  // Gap center between 15% and 85% of VH
-  const margin = gateGap / 2 + 20;
-  const cx = VW + GATE_W;
-  const cy = margin + Math.random() * (VH - 2 * margin);
-  gates.push({ x: cx, gapCy: cy, passed: false, active: true });
+function sfxMiss() {
+  playOsc('sawtooth', 160, 0.25, 0.18, 80);
 }
-
-// ─── Particles ───────────────────────────────────────────────────────────────
-let particles = [];
-
-function spawnSteamPuff(x, y, count) {
-  for (let i = 0; i < count; i++) {
-    const angle = -Math.PI/2 + (Math.random()-0.5) * Math.PI * 0.7;
-    const spd   = 40 + Math.random() * 120;
-    particles.push({
-      x, y,
-      vx: Math.cos(angle) * spd,
-      vy: Math.sin(angle) * spd,
-      life: 1,
-      decay: 0.6 + Math.random() * 0.8,
-      r: 5 + Math.random() * 10,
-      type: 'steam',
-      hue: 190 + Math.random() * 40
-    });
-  }
-}
-
-function spawnSparkles(x, y, count) {
-  for (let i = 0; i < count; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const spd   = 60 + Math.random() * 200;
-    particles.push({
-      x, y,
-      vx: Math.cos(angle) * spd,
-      vy: Math.sin(angle) * spd,
-      life: 1,
-      decay: 1.5 + Math.random() * 1.5,
-      r: 2 + Math.random() * 4,
-      type: 'spark',
-      hue: 40 + Math.random() * 60
-    });
-  }
-}
-
-function spawnCrashBurst(x, y) {
-  for (let i = 0; i < 40; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const spd   = 80 + Math.random() * 300;
-    particles.push({
-      x, y,
-      vx: Math.cos(angle) * spd,
-      vy: Math.sin(angle) * spd,
-      life: 1,
-      decay: 0.8 + Math.random() * 1.2,
-      r: 3 + Math.random() * 8,
-      type: 'crash',
-      hue: Math.random() * 360
-    });
-  }
-  // Expanding ring
-  particles.push({ x, y, life: 1, decay: 1.6, r: 10, maxR: 100, type: 'ring', hue: 30 });
-}
-
-function spawnSpeedLines() {
-  for (let i = 0; i < 3; i++) {
-    particles.push({
-      x: VW + 10,
-      y: 30 + Math.random() * (VH - 60),
-      vx: -(600 + Math.random() * 400),
-      vy: 0,
-      life: 1,
-      decay: 3.5,
-      r: 1,
-      len: 60 + Math.random() * 100,
-      type: 'line',
-      hue: 180 + Math.random() * 60
-    });
-  }
-}
-
-// ─── Difficulty scaling ───────────────────────────────────────────────────────
-function applyDifficulty() {
-  // All based on elapsed seconds
-  const t = elapsed;
-  needleSpd         = 1.4 + t * 0.028;
-  sweetGreen        = Math.max(0.10, 0.28 - t * 0.002);
-  sweetYellow       = Math.max(0.28, 0.58 - t * 0.003);
-  gateSpeed         = 160 + t * 2.5;
-  gateSpawnInterval = Math.max(1.0, 2.2 - t * 0.016);
-  gateGap           = Math.max(110, 200 - t * 1.2);
-}
-
-// ─── Game logic: tap ─────────────────────────────────────────────────────────
-function onTap() {
-  if (state === 'start') {
-    startGame();
-    return;
-  }
-  if (state === 'gameover') {
-    startGame();
-    return;
-  }
-
-  const zone = getNeedleZone();
-  const px   = PLAYER_X;
-  const py   = playerY;
-
-  if (zone === 'green') {
-    playerVY = -420;
-    combo++;
-    if (combo > maxCombo) maxCombo = combo;
-    multiplier = Math.min(8, 1 + Math.floor(combo / 3));
-    if (multiplier > maxMult) maxMult = multiplier;
-    shakeAmt = 3; shakeDur = 0.1;
-    spawnSteamPuff(px - PLAYER_R, py, 10);
-    spawnSparkles(px, py, 12);
-    sfxPerfect();
-    speedLineTimer = 0.35;
-  } else if (zone === 'yellow') {
-    playerVY = -240;
-    spawnSteamPuff(px - PLAYER_R, py, 5);
-    sfxOkay();
-  } else {
-    // red — miss: leak penalty
-    leakTimer = 1.2 + elapsed * 0.01;
-    combo = 0;
-    multiplier = Math.max(1, multiplier - 1);
-    spawnSteamPuff(px - PLAYER_R, py, 3);
-    sfxMiss();
-  }
-}
-
-// ─── Game lifecycle ───────────────────────────────────────────────────────────
-function startGame() {
-  state      = 'playing';
-  score      = 0;
-  combo      = 0;
-  multiplier = 1;
-  maxMult    = 1;
-  maxCombo   = 0;
-  elapsed    = 0;
-  frameTime  = performance.now();
-  gates      = [];
-  particles  = [];
-  speedLines = [];
-  gateTimer  = 1.0; // first gate spawns after 1s
-  shakeAmt   = 0;
-  shakeDur   = 0;
-  needlePos  = 0;
-  needleDir  = 1;
-  speedLineTimer = 0;
-  resetPlayer();
-  applyDifficulty();
-  spawnGate();
-}
-
-function endGame() {
-  state = 'gameover';
-  if (score > best) {
-    best = score;
-    localStorage.setItem(LS_KEY, best);
-  }
-  shakeAmt = 14; shakeDur = 0.6;
-  spawnCrashBurst(PLAYER_X, playerY);
-  sfxCrash();
-}
-
-// ─── Update ───────────────────────────────────────────────────────────────────
-function update(now) {
-  let dt = (now - frameTime) / 1000;
-  frameTime = now;
-  dt = Math.min(dt, 0.033);
-
-  if (state !== 'playing') return;
-
-  elapsed += dt;
-  applyDifficulty();
-
-  // Needle
-  needlePos += needleDir * needleSpd * dt;
-  if (needlePos >  1) { needlePos =  1; needleDir = -1; }
-  if (needlePos < -1) { needlePos = -1; needleDir =  1; }
-
-  // Player physics
-  const effectiveG = gravity + (leakTimer > 0 ? 480 : 0);
-  playerVY += effectiveG * dt;
-  playerY  += playerVY * dt;
-  if (leakTimer > 0) leakTimer -= dt;
-
-  // Score accumulation
-  score += Math.floor(dt * 20 * multiplier);
-
-  // Gates
-  gateTimer -= dt;
-  if (gateTimer <= 0) {
-    spawnGate();
-    gateTimer = gateSpawnInterval;
-  }
-
-  for (let i = gates.length - 1; i >= 0; i--) {
-    const g = gates[i];
-    g.x -= gateSpeed * dt;
-
-    // Check pass
-    if (!g.passed && g.x + GATE_W < PLAYER_X - PLAYER_R) {
-      g.passed = true;
-      score += gateScoreValue * multiplier;
-      sfxGate();
+function sfxBoom() {
+  if (!audioEnabled || !audioCtx) return;
+  try {
+    const dur = 0.9;
+    const len = Math.ceil(audioCtx.sampleRate * dur);
+    const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 1.5);
     }
+    const src = audioCtx.createBufferSource();
+    const flt = audioCtx.createBiquadFilter();
+    flt.type = 'lowpass'; flt.frequency.value = 350;
+    const g = audioCtx.createGain();
+    src.buffer = buf;
+    src.connect(flt); flt.connect(g); g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(0.9, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    src.start(); src.stop(audioCtx.currentTime + dur + 0.01);
+    // Low rumble
+    playOsc('sawtooth', 60, 0.3, 0.4, 30);
+  } catch(e) {}
+}
+function sfxSurgeWarning() {
+  [600, 900, 1200].forEach((f, i) => {
+    setTimeout(() => playOsc('sawtooth', f, 0.18, 0.1), i * 100);
+  });
+}
 
-    // Collision: player overlapping gate x range?
-    const gLeft  = g.x - GATE_W / 2;
-    const gRight = g.x + GATE_W / 2;
-    if (PLAYER_X + PLAYER_R > gLeft && PLAYER_X - PLAYER_R < gRight) {
-      const topWall    = g.gapCy - gateGap / 2;
-      const bottomWall = g.gapCy + gateGap / 2;
-      if (playerY - PLAYER_R < topWall || playerY + PLAYER_R > bottomWall) {
-        endGame();
-        return;
+// ── URL params / friend score ─────────────────────────────────────────────────
+const urlParams = new URLSearchParams(window.location.search);
+const friendScore = parseInt(urlParams.get('score') || '0', 10) || 0;
+
+// ── LocalStorage ──────────────────────────────────────────────────────────────
+function lsGet(k, def) { return parseInt(localStorage.getItem(k) || String(def), 10) || def; }
+function lsSet(k, v)   { try { localStorage.setItem(k, String(v)); } catch(e) {} }
+
+const LS_BEST       = 'sp2_best';
+const LS_BEST_COMBO = 'sp2_best_combo';
+const LS_BEST_HEAT  = 'sp2_best_heat';
+
+// ── Timing constants ──────────────────────────────────────────────────────────
+const NUM_VALVES    = 3;
+const BASE_BPM      = 90;
+const MAX_BPM       = 135;
+const BEAT_WIN      = 0.32;   // fraction of beat interval on each side of beat
+const SURGE_BEATS   = 8;
+const SURGE_COOL    = 14;     // beats between surges
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let state      = 'start';  // 'start' | 'playing' | 'gameover'
+let score      = 0;
+let pressure   = 0;   // 0..1
+let heat       = 0;   // 0..1
+let combo      = 0;
+let maxCombo   = 0;
+let bpm        = BASE_BPM;
+let beatMs     = 60000 / bpm;
+let beatCount  = 0;
+let diffLevel  = 0;   // 0..1
+
+let inSurge         = false;
+let surgeBeatsLeft  = 0;
+let surgeCooldown   = SURGE_COOL;
+
+let activeValve     = 0;
+let valveFlash      = 0;   // 1..0 decay
+let beatPending     = false;
+let beatPendingAt   = 0;   // ms timestamp
+let tapConsumed     = false;
+let nextBeatAt      = 0;
+let lastBeatAt      = 0;
+
+let particles  = [];
+let rings      = [];   // telegraph rings
+let shakeAmt   = 0;
+let shakeX     = 0, shakeY = 0;
+let tapFlash   = 0;   // full-screen flash on hit
+let gameOverT  = 0;   // timer in ms since gameover
+let goFlash    = 0;   // orange flash intensity
+
+let hue        = 30;
+let copiedMsg  = false;
+let copiedTimer = 0;
+
+let shareBtnRect = null;  // { x,y,w,h } in canvas coords
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function txt(text, x, y, size, color, align, shadow) {
+  ctx.font = `bold ${size}px 'Courier New', monospace`;
+  ctx.textAlign = align || 'center';
+  ctx.textBaseline = 'middle';
+  if (shadow) {
+    ctx.fillStyle = 'rgba(0,0,0,0.8)';
+    ctx.fillText(text, x + 2, y + 2);
+  }
+  ctx.fillStyle = color;
+  ctx.fillText(text, x, y);
+}
+
+function valvePos(i) {
+  return { x: W / (NUM_VALVES + 1) * (i + 1), y: H * 0.56 };
+}
+
+// ── Particle system ───────────────────────────────────────────────────────────
+function spawnParticles(x, y, count, h, speed, life) {
+  for (let i = 0; i < count; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const s = speed * (0.3 + Math.random() * 0.9);
+    particles.push({
+      x, y,
+      vx: Math.cos(a) * s, vy: Math.sin(a) * s,
+      life: life, maxLife: life,
+      hue: h + (Math.random() - 0.5) * 50,
+      sz: 2 + Math.random() * 5,
+      kind: Math.random() < 0.5 ? 'dot' : 'sq'
+    });
+  }
+}
+
+function spawnSteam(x, y, n) {
+  for (let i = 0; i < n; i++) {
+    particles.push({
+      x: x + (Math.random() - 0.5) * 24,
+      y: y + (Math.random() - 0.5) * 8,
+      vx: (Math.random() - 0.5) * 1.5,
+      vy: -1.5 - Math.random() * 3.5,
+      life: 0.7 + Math.random() * 0.5,
+      maxLife: 1.2,
+      hue: 185 + Math.random() * 55,
+      sz: 5 + Math.random() * 10,
+      kind: 'steam'
+    });
+  }
+}
+
+// ── Game reset ────────────────────────────────────────────────────────────────
+function resetGame() {
+  score       = 0;
+  pressure    = 0;
+  heat        = 0;
+  combo       = 0;
+  maxCombo    = 0;
+  bpm         = BASE_BPM;
+  beatMs      = 60000 / bpm;
+  beatCount   = 0;
+  diffLevel   = 0;
+  inSurge     = false;
+  surgeBeatsLeft = 0;
+  surgeCooldown  = SURGE_COOL;
+  activeValve = Math.floor(Math.random() * NUM_VALVES);
+  valveFlash  = 0;
+  beatPending = false;
+  tapConsumed = false;
+  particles   = [];
+  rings       = [];
+  shakeAmt    = 0;
+  tapFlash    = 0;
+  goFlash     = 0;
+  gameOverT   = 0;
+  hue         = 30;
+  shareBtnRect = null;
+
+  const now = performance.now();
+  lastBeatAt  = now;
+  nextBeatAt  = now + beatMs;
+}
+
+// ── Beat events ───────────────────────────────────────────────────────────────
+function onBeat(now) {
+  // Miss check: previous beat was never tapped
+  if (beatPending && !tapConsumed) applyMiss();
+
+  beatCount++;
+  diffLevel = Math.min(1, beatCount / 80);
+  hue = (hue + 2) % 360;
+
+  // Surge management
+  if (inSurge) {
+    surgeBeatsLeft--;
+    if (surgeBeatsLeft <= 0) { inSurge = false; surgeCooldown = SURGE_COOL; }
+  } else {
+    surgeCooldown--;
+    if (surgeCooldown <= 0 && beatCount > 16) {
+      inSurge = true;
+      surgeBeatsLeft = SURGE_BEATS;
+      sfxSurgeWarning();
+    }
+  }
+
+  // Ramp BPM
+  bpm   = BASE_BPM + diffLevel * (MAX_BPM - BASE_BPM) + (inSurge ? 8 : 0);
+  beatMs = 60000 / bpm;
+
+  activeValve = Math.floor(Math.random() * NUM_VALVES);
+  valveFlash  = 1;
+  beatPending = true;
+  tapConsumed = false;
+  beatPendingAt = now;
+  lastBeatAt  = now;
+  nextBeatAt  = now + beatMs;
+
+  // Telegraph ring
+  const vp = valvePos(activeValve);
+  rings.push({ x: vp.x, y: vp.y - 58, r: 8, alpha: 1 });
+
+  sfxBeat(inSurge);
+  spawnSteam(vp.x, vp.y - 30, inSurge ? 7 : 3);
+}
+
+function applyHit(quality) {  // 0=ok, 1=perfect, 2=good
+  tapConsumed = true;
+  beatPending = false;
+  const mult = 1 + Math.floor(heat * 4);
+  const pts  = [30, 100, 60][quality] * mult;
+  score += pts;
+  combo++;
+  if (combo > maxCombo) maxCombo = combo;
+  heat     = Math.min(1, heat + 0.07);
+  pressure = Math.max(0, pressure - (inSurge ? 0.03 : 0.055));
+  tapFlash = 0.7;
+  const vp = valvePos(activeValve);
+  spawnParticles(vp.x, vp.y - 50, quality === 1 ? 18 : 12,
+    hue + quality * 40, inSurge ? 7 : 5, 0.75);
+  sfxHit(quality);
+}
+
+function applyMiss() {
+  combo = 0;
+  const pen = (inSurge ? 0.20 : 0.13) * (1 + heat * 1.4);
+  pressure = Math.min(1, pressure + pen);
+  heat     = Math.max(0, heat - 0.14);
+  beatPending = false;
+  tapConsumed = true;
+  sfxMiss();
+  if (pressure >= 1) triggerGameOver();
+}
+
+function applyEarly() {
+  combo = 0;
+  pressure = Math.min(1, pressure + 0.06);
+  heat     = Math.max(0, heat - 0.05);
+  sfxMiss();
+  if (pressure >= 1) triggerGameOver();
+}
+
+function triggerGameOver() {
+  state = 'gameover';
+  gameOverT = 0;
+  goFlash   = 1;
+  shakeAmt  = 22;
+  sfxBoom();
+  spawnParticles(W / 2, H / 2, 70, hue, 14, 1.6);
+  spawnParticles(W / 2, H / 2, 40, hue + 130, 8, 1.2);
+  const best = lsGet(LS_BEST, 0);
+  if (score > best) lsSet(LS_BEST, score);
+  if (maxCombo > lsGet(LS_BEST_COMBO, 0)) lsSet(LS_BEST_COMBO, maxCombo);
+  if (Math.round(heat * 100) > lsGet(LS_BEST_HEAT, 0)) lsSet(LS_BEST_HEAT, Math.round(heat * 100));
+}
+
+// ── Input ─────────────────────────────────────────────────────────────────────
+function handleInput(clientX, clientY) {
+  initAudio();
+
+  if (state === 'start') {
+    state = 'playing';
+    resetGame();
+    return;
+  }
+
+  if (state === 'gameover') {
+    // Check share button
+    if (shareBtnRect) {
+      const r = wrap.getBoundingClientRect();
+      const lx = clientX - r.left, ly = clientY - r.top;
+      const b = shareBtnRect;
+      if (lx >= b.x && lx <= b.x + b.w && ly >= b.y && ly <= b.y + b.h) {
+        doShare(); return;
       }
     }
-
-    if (g.x < -GATE_W - 10) gates.splice(i, 1);
-  }
-
-  // Boundary death
-  if (playerY + PLAYER_R > VH - 10) {
-    playerY = VH - 10 - PLAYER_R;
-    endGame();
+    if (gameOverT > 850) {
+      state = 'playing';
+      resetGame();
+    }
     return;
   }
-  if (playerY - PLAYER_R < 0) {
-    playerY = PLAYER_R;
-    playerVY = 0;
-  }
 
-  // Speed lines
-  if (speedLineTimer > 0) {
-    speedLineTimer -= dt;
-    if (Math.random() < 0.5) spawnSpeedLines();
-  }
+  // Playing
+  const now = performance.now();
+  const win = BEAT_WIN * beatMs * (inSurge ? 0.72 : 1);
 
-  // Particles
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.life -= p.decay * dt;
-    if (p.type !== 'ring') {
-      p.x += (p.vx || 0) * dt;
-      p.y += (p.vy || 0) * dt;
-      if (p.type === 'steam') p.r += 18 * dt;
-    }
-    if (p.life <= 0) particles.splice(i, 1);
+  if (!beatPending) {
+    // Tapped between beats — small early penalty unless near last beat
+    const sinceLastBeat = now - lastBeatAt;
+    if (sinceLastBeat > win * 0.5) applyEarly();
+    return;
   }
+  if (tapConsumed) return;
 
-  // Shake
-  if (shakeDur > 0) {
-    shakeDur -= dt;
-    shakeX = (Math.random() - 0.5) * shakeAmt * 2;
-    shakeY = (Math.random() - 0.5) * shakeAmt * 2;
+  const elapsed = now - beatPendingAt;
+
+  if (elapsed < beatMs * 0.08) {
+    applyEarly(); return;
+  }
+  if (elapsed <= win * 0.55) {
+    applyHit(0);           // ok (early side)
+  } else if (elapsed <= win) {
+    applyHit(1);           // perfect
+  } else if (elapsed <= win * 1.3) {
+    applyHit(2);           // good (late side)
   } else {
-    shakeX = 0; shakeY = 0;
+    // Very late — treat as miss
+    applyMiss();
   }
 }
 
-// ─── Draw ─────────────────────────────────────────────────────────────────────
-const hue0 = () => (elapsed * 18 + combo * 12) % 360;
-
-function drawBG() {
-  const h = hue0();
-  const g = ctx.createLinearGradient(0, 0, 0, VH);
-  g.addColorStop(0, `hsl(${h},35%,7%)`);
-  g.addColorStop(1, `hsl(${(h+40)%360},28%,5%)`);
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, VW, VH);
-
-  // Subtle horizontal scan lines feel
-  ctx.fillStyle = 'rgba(0,0,0,0.06)';
-  for (let y = 0; y < VH; y += 4) {
-    ctx.fillRect(0, y, VW, 1);
-  }
-}
-
-function drawGates() {
-  for (const g of gates) {
-    const topH    = g.gapCy - gateGap / 2;
-    const botY    = g.gapCy + gateGap / 2;
-    const botH    = VH - botY;
-    const hue = hue0();
-
-    // Gate body
-    const grad = ctx.createLinearGradient(g.x - GATE_W/2, 0, g.x + GATE_W/2, 0);
-    grad.addColorStop(0, `hsl(${hue},70%,30%)`);
-    grad.addColorStop(0.5, `hsl(${hue},80%,50%)`);
-    grad.addColorStop(1, `hsl(${hue},70%,30%)`);
-
-    ctx.fillStyle = grad;
-    // Top bar
-    ctx.fillRect(g.x - GATE_W/2, 0, GATE_W, topH);
-    // Bot bar
-    ctx.fillRect(g.x - GATE_W/2, botY, GATE_W, botH);
-
-    // Edge glow
-    ctx.shadowBlur = 14;
-    ctx.shadowColor = `hsl(${hue},90%,60%)`;
-    ctx.fillRect(g.x - GATE_W/2, topH - 4, GATE_W, 4);
-    ctx.fillRect(g.x - GATE_W/2, botY, GATE_W, 4);
-    ctx.shadowBlur = 0;
-  }
-}
-
-function drawPlayer() {
-  const x = PLAYER_X;
-  const y = playerY;
-  const r = PLAYER_R;
-  const h = hue0();
-
-  // Shadow
-  ctx.beginPath();
-  ctx.ellipse(x, y + r + 4, r * 0.7, 5, 0, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(0,0,0,0.4)';
-  ctx.fill();
-
-  // Body — airship ellipse
-  ctx.save();
-  ctx.translate(x, y);
-
-  // Glow aura
-  const grd = ctx.createRadialGradient(0, 0, 2, 0, 0, r * 2.2);
-  grd.addColorStop(0, `hsla(${h},90%,80%,0.35)`);
-  grd.addColorStop(1, 'transparent');
-  ctx.fillStyle = grd;
-  ctx.beginPath();
-  ctx.ellipse(0, 0, r * 2.2, r * 2.2, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Main hull
-  const hull = ctx.createLinearGradient(-r, -r*0.6, r, r*0.6);
-  hull.addColorStop(0, `hsl(${h},80%,70%)`);
-  hull.addColorStop(0.5, `hsl(${h},90%,55%)`);
-  hull.addColorStop(1, `hsl(${(h+180)%360},60%,35%)`);
-  ctx.beginPath();
-  ctx.ellipse(0, 0, r * 1.5, r * 0.75, 0, 0, Math.PI * 2);
-  ctx.fillStyle = hull;
-  ctx.fill();
-
-  // Highlight
-  ctx.beginPath();
-  ctx.ellipse(-r*0.3, -r*0.25, r*0.6, r*0.22, -0.3, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
-  ctx.fill();
-
-  // Engine nozzle (left side)
-  ctx.fillStyle = `hsl(${h},50%,40%)`;
-  ctx.beginPath();
-  ctx.roundRect(-r*1.5, -r*0.2, r*0.5, r*0.4, 3);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-function drawGauge() {
-  // Centered gauge at bottom portion
-  const cx = VW / 2;
-  const cy = VH - 90;
-  const rad = 55;
-  const start = Math.PI * 0.8;
-  const end   = Math.PI * 2.2;
-
-  // Background arc
-  ctx.beginPath();
-  ctx.arc(cx, cy, rad, start, end);
-  ctx.strokeStyle = '#1a2a3a';
-  ctx.lineWidth = 14;
-  ctx.lineCap = 'round';
-  ctx.stroke();
-
-  // Red zone (full arc, background)
-  ctx.beginPath();
-  ctx.arc(cx, cy, rad, start, end);
-  ctx.strokeStyle = '#ff3333';
-  ctx.lineWidth = 13;
-  ctx.stroke();
-
-  // Yellow zone
-  const totalArc = end - start;
-  const half = totalArc / 2;
-  const yStart = start + half * (1 - sweetYellow);
-  const yEnd   = end   - half * (1 - sweetYellow);
-  ctx.beginPath();
-  ctx.arc(cx, cy, rad, yStart, yEnd);
-  ctx.strokeStyle = '#ffcc00';
-  ctx.lineWidth = 13;
-  ctx.stroke();
-
-  // Green zone
-  const gStart = start + half * (1 - sweetGreen);
-  const gEnd   = end   - half * (1 - sweetGreen);
-  ctx.beginPath();
-  ctx.arc(cx, cy, rad, gStart, gEnd);
-  ctx.strokeStyle = '#22ff88';
-  ctx.lineWidth = 13;
-  ctx.stroke();
-
-  // Needle
-  const needleAngle = start + ((needlePos + 1) / 2) * totalArc;
-  const nx = cx + Math.cos(needleAngle) * rad;
-  const ny = cy + Math.sin(needleAngle) * rad;
-
-  // Needle glow
-  ctx.shadowBlur = 10;
-  ctx.shadowColor = 'white';
-  ctx.beginPath();
-  ctx.moveTo(cx, cy);
-  ctx.lineTo(nx, ny);
-  ctx.strokeStyle = 'white';
-  ctx.lineWidth = 3;
-  ctx.lineCap = 'round';
-  ctx.stroke();
-  ctx.shadowBlur = 0;
-
-  // Center dot
-  ctx.beginPath();
-  ctx.arc(cx, cy, 6, 0, Math.PI * 2);
-  ctx.fillStyle = '#eee';
-  ctx.fill();
-
-  // Gauge label
-  ctx.fillStyle = 'rgba(180,200,220,0.7)';
-  ctx.font = 'bold 11px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('PRESSURE', cx, cy + 22);
-}
-
-function drawParticles() {
-  for (const p of particles) {
-    ctx.save();
-    ctx.globalAlpha = Math.max(0, p.life);
-
-    if (p.type === 'steam') {
-      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
-      g.addColorStop(0, `hsla(${p.hue},60%,80%,0.6)`);
-      g.addColorStop(1, `hsla(${p.hue},40%,70%,0)`);
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (p.type === 'spark') {
-      ctx.fillStyle = `hsl(${p.hue},100%,75%)`;
-      ctx.shadowBlur = 6;
-      ctx.shadowColor = `hsl(${p.hue},100%,60%)`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    } else if (p.type === 'crash') {
-      ctx.fillStyle = `hsl(${p.hue},100%,65%)`;
-      ctx.shadowBlur = 8;
-      ctx.shadowColor = `hsl(${p.hue},100%,60%)`;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-    } else if (p.type === 'ring') {
-      const progress = 1 - p.life;
-      const r = p.r + (p.maxR - p.r) * progress;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
-      ctx.strokeStyle = `hsl(${p.hue},100%,70%)`;
-      ctx.lineWidth = 3 * p.life;
-      ctx.stroke();
-    } else if (p.type === 'line') {
-      ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-      ctx.lineTo(p.x + p.len, p.y);
-      ctx.strokeStyle = `hsla(${p.hue},80%,80%,${p.life})`;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-}
-
-function drawHUD() {
-  // Score
-  ctx.fillStyle = 'rgba(255,255,255,0.9)';
-  ctx.font = 'bold 32px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(score, VW / 2, 50);
-
-  // Multiplier
-  if (multiplier > 1) {
-    ctx.fillStyle = `hsl(${hue0()},90%,70%)`;
-    ctx.font = 'bold 18px sans-serif';
-    ctx.fillText(`x${multiplier}`, VW / 2, 75);
-  }
-
-  // Combo streak
-  if (combo > 0) {
-    ctx.fillStyle = `hsla(${hue0()},80%,75%,0.85)`;
-    ctx.font = '13px sans-serif';
-    ctx.fillText(`COMBO ${combo}`, VW / 2, 96);
-  }
-
-  // Mute toggle (top-right)
-  drawMuteBtn();
-}
-
-function drawMuteBtn() {
-  const bx = VW - 36, by = 14;
-  ctx.fillStyle = 'rgba(255,255,255,0.08)';
-  ctx.beginPath();
-  ctx.roundRect(bx, by, 28, 28, 6);
-  ctx.fill();
-  ctx.fillStyle = muted ? '#666' : '#aad';
-  ctx.font = '16px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(muted ? '🔇' : '🔊', bx + 14, by + 20);
-}
-
-function drawStartScreen() {
-  drawBG();
-
-  const cx = VW / 2;
-  const cy = VH / 2;
-  const h  = (Date.now() / 50) % 360;
-
-  // Title
-  ctx.save();
-  ctx.shadowBlur = 30;
-  ctx.shadowColor = `hsl(${h},100%,60%)`;
-  ctx.fillStyle = `hsl(${h},90%,70%)`;
-  ctx.font = 'bold 48px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('STEAM', cx, cy - 60);
-  ctx.fillStyle = `hsl(${(h+40)%360},90%,75%)`;
-  ctx.fillText('PULSE', cx, cy - 10);
-  ctx.shadowBlur = 0;
-  ctx.restore();
-
-  // Subtitle
-  ctx.fillStyle = 'rgba(180,200,220,0.8)';
-  ctx.font = '16px sans-serif';
-  ctx.fillText('Pressure Rail', cx, cy + 22);
-
-  // Best score
-  if (best > 0) {
-    ctx.fillStyle = 'rgba(180,200,220,0.55)';
-    ctx.font = '14px sans-serif';
-    ctx.fillText(`Best: ${best}`, cx, cy + 50);
-  }
-
-  // Tap prompt — pulsing
-  const pulse = 0.6 + 0.4 * Math.sin(Date.now() / 400);
-  ctx.fillStyle = `rgba(200,220,255,${pulse})`;
-  ctx.font = 'bold 18px sans-serif';
-  ctx.fillText('TAP TO START', cx, cy + 120);
-
-  // Mini gauge hint
-  ctx.fillStyle = 'rgba(120,160,190,0.6)';
-  ctx.font = '13px sans-serif';
-  ctx.fillText('Tap when needle is in the green!', cx, cy + 150);
-
-  drawMuteBtn();
-}
-
-function drawGameoverScreen() {
-  // Dim overlay
-  ctx.fillStyle = 'rgba(5,10,20,0.72)';
-  ctx.fillRect(0, 0, VW, VH);
-
-  const cx = VW / 2;
-  const h  = (Date.now() / 50) % 360;
-
-  ctx.save();
-  ctx.shadowBlur = 20;
-  ctx.shadowColor = '#ff4444';
-  ctx.fillStyle = '#ff6666';
-  ctx.font = 'bold 36px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('GAME OVER', cx, 210);
-  ctx.shadowBlur = 0;
-  ctx.restore();
-
-  ctx.fillStyle = '#c8d8f0';
-  ctx.font = 'bold 28px sans-serif';
-  ctx.fillText(score, cx, 260);
-
-  ctx.fillStyle = 'rgba(160,180,200,0.7)';
-  ctx.font = '15px sans-serif';
-  ctx.fillText(`Best: ${best}`, cx, 290);
-
-  ctx.fillStyle = `hsl(${h},80%,70%)`;
-  ctx.font = '14px sans-serif';
-  ctx.fillText(`Max Multiplier: x${maxMult}   Max Combo: ${maxCombo}`, cx, 320);
-
-  // Buttons
-  const pulse = 0.7 + 0.3 * Math.sin(Date.now() / 380);
-  ctx.fillStyle = `rgba(100,200,130,${pulse})`;
-  ctx.font = 'bold 20px sans-serif';
-  ctx.fillText('TAP TO RETRY', cx, 390);
-
-  // Share button area
-  ctx.fillStyle = 'rgba(60,120,200,0.25)';
-  ctx.beginPath();
-  ctx.roundRect(cx - 70, 415, 140, 38, 10);
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(80,150,240,0.6)';
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  ctx.fillStyle = '#8ab8f0';
-  ctx.font = 'bold 15px sans-serif';
-  ctx.fillText('SHARE SCORE', cx, 439);
-
-  drawMuteBtn();
-}
-
-function drawPlayingScreen() {
-  drawBG();
-  drawGates();
-  drawParticles();
-  drawPlayer();
-  drawGauge();
-  drawHUD();
-}
-
-// ─── Render loop ──────────────────────────────────────────────────────────────
-function render(now) {
-  requestAnimationFrame(render);
-  update(now);
-
-  ctx.save();
-  // Map virtual coords → canvas pixels with dpr & scale & shake
-  ctx.setTransform(
-    dpr * scale, 0,
-    0, dpr * scale,
-    (offX + shakeX) * dpr,
-    (offY + shakeY) * dpr
-  );
-
-  if (state === 'start')    drawStartScreen();
-  else if (state === 'playing')  drawPlayingScreen();
-  else if (state === 'gameover') {
-    drawPlayingScreen();
-    drawGameoverScreen();
-  }
-
-  ctx.restore();
-}
-
-requestAnimationFrame(t => { frameTime = t; requestAnimationFrame(render); });
-
-// ─── Input ────────────────────────────────────────────────────────────────────
-// Tap/click on canvas
-shell.addEventListener('pointerdown', e => {
+canvas.addEventListener('pointerdown', (e) => {
   e.preventDefault();
-
-  // Check mute button tap
-  const rect   = shell.getBoundingClientRect();
-  const tapX   = (e.clientX - rect.left) / (rect.width  / VW);
-  const tapY   = (e.clientY - rect.top)  / (rect.height / VH);
-
-  // Mute button region (top-right)
-  if (tapX > VW - 50 && tapY < 52) {
-    muted = !muted;
-    return;
-  }
-
-  // Share button region on gameover
-  if (state === 'gameover') {
-    const cx = VW / 2;
-    if (tapX > cx - 70 && tapX < cx + 70 && tapY > 415 && tapY < 453) {
-      doShare();
-      return;
-    }
-  }
-
-  onTap();
+  handleInput(e.clientX, e.clientY);
 }, { passive: false });
 
-// Keyboard
-window.addEventListener('keydown', e => {
+window.addEventListener('keydown', (e) => {
   if (e.code === 'Space' || e.code === 'Enter') {
     e.preventDefault();
-    onTap();
+    handleInput(W / 2, H / 2);
   }
 });
 
-// ─── Share ────────────────────────────────────────────────────────────────────
-async function doShare() {
-  const url  = `https://balinti.github.io/steam-pulse/?score=${score}`;
+// ── Share ─────────────────────────────────────────────────────────────────────
+function doShare() {
+  const url  = `https://balinti.github.io/steam-pulse/?ref=share&score=${score}&heat=${Math.round(heat * 100)}`;
   const text = `I scored ${score} in Steam Pulse! Can you beat me?`;
-
   if (navigator.share) {
+    navigator.share({ title: 'Steam Pulse', text, url }).catch(() => {});
+  } else {
     try {
-      await navigator.share({ title: 'Steam Pulse', text, url });
-      return;
-    } catch(e) {}
+      navigator.clipboard.writeText(url + '\n' + text).then(() => {
+        copiedMsg = true; copiedTimer = 2000;
+      });
+    } catch(e) {
+      window.prompt('Copy challenge link:', url);
+    }
   }
-  // Fallback: copy to clipboard
-  try {
-    await navigator.clipboard.writeText(`${text}\n${url}`);
-    // Brief feedback — show in canvas by borrowing score
-    const old = score;
-    score = 0;
-    setTimeout(() => { score = old; }, 1200);
-  } catch(e) {}
 }
 
-})(); // end IIFE
-</script>
+// ── Draw: Background ──────────────────────────────────────────────────────────
+function drawBG() {
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, `hsl(${hue},38%,6%)`);
+  grad.addColorStop(1, `hsl(${(hue + 28) % 360},48%,10%)`);
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
 
+  // Grid
+  ctx.strokeStyle = 'rgba(255,190,80,0.045)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 42) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y < H; y += 42) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // Surge tint
+  if (inSurge && state === 'playing') {
+    const p = Math.sin(Date.now() / 140) * 0.5 + 0.5;
+    ctx.fillStyle = `rgba(255,40,0,${0.03 + p * 0.04})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+}
+
+// ── Draw: Pipes ───────────────────────────────────────────────────────────────
+function drawPipes() {
+  const py = H * 0.56, ph = 18;
+  const grad = ctx.createLinearGradient(0, py - ph / 2, 0, py + ph / 2);
+  grad.addColorStop(0, '#7a5430');
+  grad.addColorStop(0.45, '#d4a040');
+  grad.addColorStop(1, '#4a2e10');
+  ctx.fillStyle = grad;
+  roundRect(10, py - ph / 2, W - 20, ph, 8);
+  ctx.fill();
+  ctx.strokeStyle = '#e8b848';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  // Rivets
+  ctx.fillStyle = '#7a5018';
+  for (let x = 28; x < W - 16; x += 38) {
+    ctx.beginPath(); ctx.arc(x, py, 3.5, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+// ── Draw: Valves ──────────────────────────────────────────────────────────────
+function drawValves(totalMs) {
+  for (let i = 0; i < NUM_VALVES; i++) {
+    const vp  = valvePos(i);
+    const vx  = vp.x, vy = vp.y;
+    const lit = (i === activeValve) ? valveFlash : 0;
+    const vh  = (hue + i * 65) % 360;
+    const rotSpeed = lit > 0.1 ? 2.5 : 0.5;
+    const rot = totalMs * 0.001 * rotSpeed;
+
+    // Glow
+    if (lit > 0.1) {
+      const gw = ctx.createRadialGradient(vx, vy - 58, 0, vx, vy - 58, 68);
+      gw.addColorStop(0, `hsla(${vh},100%,72%,${lit * 0.55})`);
+      gw.addColorStop(1, 'transparent');
+      ctx.fillStyle = gw;
+      ctx.beginPath(); ctx.arc(vx, vy - 58, 68, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Stem
+    ctx.fillStyle = '#603820';
+    ctx.strokeStyle = '#d8a038';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.rect(vx - 7, vy - 62, 14, 28);
+    ctx.fill(); ctx.stroke();
+
+    // Wheel
+    ctx.save();
+    ctx.translate(vx, vy - 62);
+    ctx.rotate(rot);
+    const wc = lit > 0.1 ? `hsl(${vh},100%,${55 + lit * 28}%)` : '#8a6028';
+    ctx.strokeStyle = wc; ctx.lineWidth = 3.5;
+    ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.stroke();
+    for (let k = 0; k < 4; k++) {
+      const a = (k / 4) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(a) * 22, Math.sin(a) * 22);
+      ctx.stroke();
+    }
+    ctx.fillStyle = lit > 0.1 ? `hsl(${vh},100%,80%)` : '#5a3818';
+    ctx.beginPath(); ctx.arc(0, 0, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+
+    // Pressure mini-gauge arc
+    ctx.strokeStyle = '#3a2010';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(vx, vy + 18, 11, Math.PI, 0); ctx.stroke();
+    if (lit > 0 && heat > 0) {
+      ctx.strokeStyle = `hsl(${30 - heat * 28},100%,58%)`;
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(vx, vy + 18, 11, Math.PI, Math.PI + heat * Math.PI); ctx.stroke();
+    }
+  }
+}
+
+// ── Draw: Rings ───────────────────────────────────────────────────────────────
+function drawRings(dt) {
+  for (let i = rings.length - 1; i >= 0; i--) {
+    const rg = rings[i];
+    rg.r += dt * 0.065;
+    rg.alpha = Math.max(0, 1 - rg.r / 88);
+    if (rg.alpha <= 0) { rings.splice(i, 1); continue; }
+    ctx.strokeStyle = `hsla(${hue},100%,70%,${rg.alpha})`;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.arc(rg.x, rg.y, rg.r, 0, Math.PI * 2); ctx.stroke();
+  }
+}
+
+// ── Draw: Particles ───────────────────────────────────────────────────────────
+function drawParticles(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.life -= dt * 0.001;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.12;
+    const t = p.life / p.maxLife;
+
+    if (p.kind === 'steam') {
+      const sz = p.sz * (1 + (1 - t) * 1.8);
+      ctx.fillStyle = `hsla(${p.hue},55%,78%,${t * 0.38})`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, sz, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.fillStyle = `hsla(${p.hue},100%,65%,${t})`;
+      if (p.kind === 'sq') {
+        ctx.fillRect(p.x - p.sz / 2, p.y - p.sz / 2, p.sz, p.sz);
+      } else {
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.sz * t, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+  }
+}
+
+// ── Draw: Pressure gauge ──────────────────────────────────────────────────────
+function drawPressureGauge() {
+  const gx = 10, gy = 10, gw = W - 20, gh = 15, r = 6;
+  roundRect(gx, gy, gw, gh, r);
+  ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.fill();
+  ctx.strokeStyle = 'rgba(255,190,80,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+
+  if (pressure > 0) {
+    const fw = (gw - 4) * pressure;
+    const ph = 90 - pressure * 90;
+    const fg = ctx.createLinearGradient(gx + 2, 0, gx + 2 + fw, 0);
+    fg.addColorStop(0, `hsl(${ph},100%,38%)`);
+    fg.addColorStop(1, `hsl(${ph},100%,62%)`);
+    roundRect(gx + 2, gy + 2, fw, gh - 4, r - 1);
+    ctx.fillStyle = fg; ctx.fill();
+    if (pressure > 0.65) {
+      const p2 = Math.sin(Date.now() / 95) * 0.5 + 0.5;
+      roundRect(gx + 2, gy + 2, fw, gh - 4, r - 1);
+      ctx.fillStyle = `rgba(255,80,0,${p2 * 0.35})`; ctx.fill();
+    }
+  }
+  txt('PRESSURE', W / 2, gy + gh / 2 + 0.5, 7.5, 'rgba(255,195,90,0.65)');
+}
+
+// ── Draw: Heat bar ────────────────────────────────────────────────────────────
+function drawHeatBar() {
+  const bx = 10, by = 30, bw = W - 20, bh = 10, r = 4;
+  roundRect(bx, by, bw, bh, r);
+  ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fill();
+
+  if (heat > 0) {
+    const fw = (bw - 4) * heat;
+    const hg = ctx.createLinearGradient(bx + 2, 0, bx + 2 + fw, 0);
+    hg.addColorStop(0, `hsl(${hue},80%,38%)`);
+    hg.addColorStop(1, `hsl(${(hue + 55) % 360},100%,68%)`);
+    roundRect(bx + 2, by + 2, fw, bh - 4, r - 1);
+    ctx.fillStyle = hg; ctx.fill();
+  }
+  const mult = 1 + Math.floor(heat * 4);
+  txt(`HEAT  x${mult}`, W / 2, by + bh / 2 + 0.5, 7, 'rgba(255,190,80,0.6)');
+}
+
+// ── Draw: HUD ─────────────────────────────────────────────────────────────────
+function drawHUD() {
+  txt(String(score), W / 2, H * 0.16, 54, `hsl(${hue},100%,76%)`, 'center', true);
+  if (combo > 1) {
+    txt(`COMBO x${combo}`, W / 2, H * 0.235, 15, `hsl(${(hue + 60) % 360},100%,70%)`, 'center', true);
+  }
+  const best = lsGet(LS_BEST, 0);
+  if (best > 0) {
+    txt(`BEST ${best}`, W - 10, 52, 10, 'rgba(255,190,80,0.5)', 'right');
+  }
+  if (inSurge) {
+    const p = Math.sin(Date.now() / 115) * 0.5 + 0.5;
+    txt('!! STEAM SURGE !!', W / 2, H * 0.42, 18, `rgba(255,${90 + p * 120},0,${0.82 + p * 0.18})`, 'center', true);
+  }
+}
+
+// ── Draw: tap flash ───────────────────────────────────────────────────────────
+function drawTapFlash() {
+  if (tapFlash <= 0) return;
+  const rg = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.8);
+  rg.addColorStop(0, `hsla(${hue},100%,80%,${tapFlash * 0.14})`);
+  rg.addColorStop(1, 'transparent');
+  ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+}
+
+// ── Draw: Start screen ────────────────────────────────────────────────────────
+function drawStart() {
+  txt('STEAM', W / 2, H * 0.29, 66, `hsl(${hue},100%,74%)`, 'center', true);
+  txt('PULSE', W / 2, H * 0.40, 66, `hsl(${(hue + 42) % 360},100%,64%)`, 'center', true);
+  txt('OVERPRESSURE', W / 2, H * 0.50, 13, 'rgba(255,195,90,0.65)');
+
+  const p = Math.sin(Date.now() / 490) * 0.4 + 0.6;
+  txt('TAP TO START', W / 2, H * 0.635, 21, `rgba(255,215,140,${p})`, 'center', true);
+
+  if (friendScore > 0) {
+    roundRect(W / 2 - 145, H * 0.705, 290, 36, 8);
+    ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fill();
+    ctx.strokeStyle = `hsl(${hue},75%,48%)`; ctx.lineWidth = 1.5; ctx.stroke();
+    txt(`Friend score: ${friendScore} — Beat it!`, W / 2, H * 0.705 + 18, 13, `hsl(${(hue + 58) % 360},100%,72%)`);
+  }
+  txt('SPACE / ENTER / TAP', W / 2, H * 0.82, 10.5, 'rgba(255,190,80,0.38)');
+}
+
+// ── Draw: Game Over screen ────────────────────────────────────────────────────
+function drawGameOver() {
+  ctx.fillStyle = `rgba(0,0,0,${Math.min(0.76, gameOverT / 750)})`;
+  ctx.fillRect(0, 0, W, H);
+
+  if (gameOverT < 250) return;
+
+  const a1 = Math.min(1, (gameOverT - 250) / 280);
+
+  // BOOM flash
+  if (gameOverT < 750) {
+    const ba = Math.max(0, 1 - (gameOverT - 250) / 500) * a1;
+    ctx.save(); ctx.globalAlpha = ba;
+    txt('BOOM!', W / 2, H / 2, 96, '#ff4400', 'center', true);
+    ctx.restore();
+  }
+
+  if (gameOverT < 550) return;
+  const a2 = Math.min(1, (gameOverT - 550) / 200);
+  ctx.save(); ctx.globalAlpha = a2;
+
+  txt('GAME OVER', W / 2, H * 0.29, 36, `hsl(${hue},100%,64%)`, 'center', true);
+  txt('SCORE', W / 2, H * 0.39, 13, 'rgba(255,190,80,0.62)');
+  txt(String(score), W / 2, H * 0.465, 58, `hsl(${hue},100%,74%)`, 'center', true);
+
+  const best = lsGet(LS_BEST, 0);
+  if (score >= best && score > 0) {
+    const pp = Math.sin(Date.now() / 280) * 0.5 + 0.5;
+    txt('NEW BEST!', W / 2, H * 0.545, 18, `hsl(60,100%,${62 + pp * 14}%)`, 'center', true);
+  } else {
+    txt(`BEST  ${best}`, W / 2, H * 0.545, 15, 'rgba(255,190,80,0.58)');
+  }
+  txt(`MAX COMBO  ${maxCombo}`, W / 2, H * 0.605, 12.5, `rgba(255,${140 + Math.round(heat * 100)},50,0.72)`);
+
+  if (gameOverT > 850) {
+    const pp = Math.sin(Date.now() / 440) * 0.4 + 0.6;
+    txt('TAP TO RETRY', W / 2, H * 0.705, 20, `rgba(255,215,140,${pp})`, 'center', true);
+  }
+
+  // Share button
+  const bw = 168, bh = 38;
+  const bx = W / 2 - bw / 2, by = H * 0.775;
+  shareBtnRect = { x: bx, y: by, w: bw, h: bh };
+  roundRect(bx, by, bw, bh, 10);
+  ctx.fillStyle = `hsl(${hue},75%,26%)`; ctx.fill();
+  ctx.strokeStyle = `hsl(${hue},100%,58%)`; ctx.lineWidth = 2; ctx.stroke();
+
+  const label = copiedMsg ? 'LINK COPIED!' : 'SHARE / CHALLENGE';
+  txt(label, W / 2, by + bh / 2, 12, copiedMsg ? '#aaffaa' : `hsl(${hue},100%,80%)`);
+
+  ctx.restore();
+}
+
+// ── Main loop ─────────────────────────────────────────────────────────────────
+let lastTime = performance.now();
+let totalMs  = 0;
+
+function loop(now) {
+  requestAnimationFrame(loop);
+
+  const dt = Math.min(now - lastTime, 80);
+  lastTime = now;
+  totalMs += dt;
+
+  // Decay
+  valveFlash = Math.max(0, valveFlash - dt * 0.0028);
+  tapFlash   = Math.max(0, tapFlash   - dt * 0.0045);
+  heat       = Math.max(0, heat       - dt * 0.000085);
+
+  if (copiedTimer > 0) { copiedTimer -= dt; if (copiedTimer <= 0) copiedMsg = false; }
+
+  // Shake
+  if (shakeAmt > 0) {
+    shakeAmt *= 0.87;
+    shakeX = (Math.random() - 0.5) * shakeAmt;
+    shakeY = (Math.random() - 0.5) * shakeAmt;
+    if (shakeAmt < 0.4) { shakeAmt = 0; shakeX = shakeY = 0; }
+  } else { shakeX = shakeY = 0; }
+
+  ctx.save();
+  ctx.translate(shakeX, shakeY);
+
+  drawBG();
+  drawParticles(dt);
+
+  if (state === 'start') {
+    drawPipes();
+    drawValves(totalMs);
+    drawStart();
+  } else if (state === 'playing') {
+    // Beat scheduler
+    if (now >= nextBeatAt) onBeat(now);
+
+    // Auto-expire beat (late miss) between scheduled beats
+    if (beatPending && !tapConsumed) {
+      const elapsed = now - beatPendingAt;
+      const win = BEAT_WIN * beatMs * (inSurge ? 0.72 : 1);
+      if (elapsed > win * 1.6) {
+        applyMiss();
+      }
+    }
+
+    drawPipes();
+    drawValves(totalMs);
+    drawRings(dt);
+    drawPressureGauge();
+    drawHeatBar();
+    drawHUD();
+    drawTapFlash();
+
+    // Game over flash overlay
+    if (goFlash > 0) {
+      ctx.fillStyle = `rgba(255,80,0,${goFlash})`;
+      ctx.fillRect(0, 0, W, H);
+      goFlash = Math.max(0, goFlash - dt * 0.005);
+    }
+  } else if (state === 'gameover') {
+    gameOverT += dt;
+    drawPipes();
+    drawValves(totalMs);
+    drawGameOver();
+  }
+
+  ctx.restore();
+}
+
+requestAnimationFrame(loop);
+
+})();
+</script>
 </body>
 </html>
